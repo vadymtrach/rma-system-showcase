@@ -1,0 +1,75 @@
+package com.github.vadymtrach.rmasystemshowcase.service;
+
+import com.github.vadymtrach.rmasystemshowcase.dto.request.UserChangePasswordRequest;
+import com.github.vadymtrach.rmasystemshowcase.dto.request.UserCreateRequest;
+import com.github.vadymtrach.rmasystemshowcase.dto.request.UserUpdateRequest;
+import com.github.vadymtrach.rmasystemshowcase.dto.response.UserResponse;
+import com.github.vadymtrach.rmasystemshowcase.entity.User;
+import com.github.vadymtrach.rmasystemshowcase.exception.BusinessLogicException;
+import com.github.vadymtrach.rmasystemshowcase.mapper.UserMapper;
+import com.github.vadymtrach.rmasystemshowcase.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
+
+    @Transactional
+    public UserResponse createUser(UserCreateRequest request) {
+        User user = userMapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userMapper.toResponseDTO(userRepository.save(user));
+    }
+
+    public UserResponse getUser(Long id) {
+        return userMapper.toResponseDTO(findUserById(id));
+    }
+
+    public List<UserResponse> getUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Transactional
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
+        User existing = findUserById(id);
+        userMapper.updateEntityFromRequest(request, existing);
+        return userMapper.toResponseDTO(existing);
+    }
+
+    @Transactional
+    public void updateStatus(Long id, boolean status) {
+        User existing = findUserById(id);
+        existing.setActive(status);
+    }
+
+    @Transactional
+    public void changePassword(Long id, UserChangePasswordRequest request) {
+        User existing = findUserById(id);
+
+        if (!passwordEncoder.matches(request.currentPassword(), existing.getPassword())) {
+            throw new BusinessLogicException("Current password mismatch");
+        }
+        if (passwordEncoder.matches(request.newPassword(), existing.getPassword())) {
+            throw new BusinessLogicException("New password must be different");
+        }
+
+        existing.setPassword(passwordEncoder.encode(request.newPassword()));
+    }
+
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(RuntimeException::new);
+    }
+}
