@@ -1,0 +1,56 @@
+import { useState, type FormEvent } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
+
+export function LoginPage() {
+  const { currentUser, loading, login } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  if (!loading && currentUser) return <Navigate to="/" replace />;
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!email.trim() || !password) {
+      setError("Podaj email i hasło.");
+      return;
+    }
+    try {
+      await login(email.trim(), password);
+      navigate("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Błąd uwierzytelniania.");
+    }
+  };
+
+  return (
+    <div className="login-wrap">
+      <form className="login-box form-box" onSubmit={handleSubmit}>
+        <div className="logo">HARDWARE RMA SYSTEM</div>
+        <label>Email</label>
+        <input
+          type="text"
+          placeholder="user@rma-service.local"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <label>Hasło</label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <div className="form-actions">
+          <button type="submit" className="btn btn-green" style={{ width: "100%" }}>
+            Zaloguj się
+          </button>
+        </div>
+        <div className="error-msg">{error}</div>
+      </form>
+    </div>
+  );
+}
