@@ -15,18 +15,18 @@ export function ProfilePage() {
   useEffect(() => {
     getMyProfile()
       .then(setProfile)
-      .catch((e) => alert(e instanceof Error ? e.message : "Wystąpił błąd."));
+      .catch((e) => alert(e instanceof Error ? e.message : "An error occurred."));
   }, []);
 
   async function submitPasswordChange() {
     setError("");
     setInfo("");
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError("Wszystkie pola są wymagane.");
+      setError("All fields are required.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Hasła nie są identyczne.");
+      setError("Passwords do not match.");
       return;
     }
     try {
@@ -34,36 +34,36 @@ export function ProfilePage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setInfo("Hasło zostało pomyślnie zaktualizowane.");
+      setInfo("Password successfully updated.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Wystąpił błąd.");
+      setError(e instanceof Error ? e.message : "An error occurred.");
     }
   }
 
   return (
     <section id="view-profile">
-      <h2>Twój profil</h2>
+      <h2>Your profile</h2>
       <div className="profile-box">
         <p>
-          <strong>Identyfikator (Email):</strong> <span>{profile?.email ?? "-"}</span>
+          <strong>Identifier (Email):</strong> <span>{profile?.email ?? "-"}</span>
         </p>
         <p>
-          <strong>Użytkownik:</strong> <span>{profile?.fullName ?? "-"}</span>
+          <strong>User:</strong> <span>{profile?.fullName ?? "-"}</span>
         </p>
         <p>
-          <strong>Uprawnienia:</strong> <span>{profile?.role ?? "-"}</span>
+          <strong>Permissions:</strong> <span>{profile?.role ?? "-"}</span>
         </p>
         <hr />
-        <h3 style={{ marginTop: 0 }}>Aktualizacja hasła</h3>
-        <label>Obecne hasło</label>
+        <h3 style={{ marginTop: 0 }}>Change password</h3>
+        <label>Current password</label>
         <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-        <label>Nowe hasło</label>
+        <label>New password</label>
         <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-        <label>Powtórz nowe hasło</label>
+        <label>Repeat new password</label>
         <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
         <div className="form-actions">
           <button className="btn btn-green" onClick={submitPasswordChange}>
-            Zapisz nowe hasło
+            Save new password
           </button>
         </div>
         <div className="error-msg">{error}</div>

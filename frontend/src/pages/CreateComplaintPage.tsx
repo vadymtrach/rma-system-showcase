@@ -17,7 +17,7 @@ export function CreateComplaintPage() {
   async function submit() {
     const insuranceAmount = Number(insurance);
     if (!rmaNumber.trim() || !description.trim() || !address.trim() || Number.isNaN(insuranceAmount)) {
-      setError("Wypełnij wszystkie wymagane pola.");
+      setError("Fill in all required fields.");
       return;
     }
     try {
@@ -31,23 +31,23 @@ export function CreateComplaintPage() {
       await refreshComplaints();
       navigate("/");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Wystąpił błąd.");
+      setError(e instanceof Error ? e.message : "An error occurred.");
     }
   }
 
   return (
     <section id="view-create">
-      <h2>Rejestracja nowego zgłoszenia</h2>
+      <h2>Register a new complaint</h2>
       <div className="form-box">
-        <label>Numer referencyjny RMA</label>
+        <label>RMA reference number</label>
         <input
           type="text"
-          placeholder="np. RMA-2026-001"
+          placeholder="e.g. RMA-2026-001"
           value={rmaNumber}
           onChange={(e) => setRmaNumber(e.target.value)}
         />
 
-        <label>Kategoria sprzętu</label>
+        <label>Equipment category</label>
         <select value={productType} onChange={(e) => setProductType(e.target.value as ProductType)}>
           {(Object.keys(PRODUCT_LABELS) as ProductType[]).map((key) => (
             <option key={key} value={key}>
@@ -56,21 +56,21 @@ export function CreateComplaintPage() {
           ))}
         </select>
 
-        <label>Szczegółowy opis awarii</label>
+        <label>Detailed fault description</label>
         <textarea
-          placeholder="Objawy usterki, kody błędów..."
+          placeholder="Fault symptoms, error codes..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <label>Adres zwrotny klienta</label>
+        <label>Customer return address</label>
         <textarea
-          placeholder="Firma / Odbiorca, Ulica, Kod i Miasto"
+          placeholder="Company / Recipient, Street, ZIP and City"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
 
-        <label>Wartość ubezpieczenia (PLN)</label>
+        <label>Insurance value (PLN)</label>
         <input
           type="number"
           step="0.01"
@@ -82,10 +82,10 @@ export function CreateComplaintPage() {
 
         <div className="form-actions">
           <button className="btn btn-green" onClick={submit}>
-            Utwórz zgłoszenie
+            Create complaint
           </button>
           <button className="btn btn-blue" onClick={() => navigate("/")}>
-            Anuluj
+            Cancel
           </button>
         </div>
         <div className="error-msg">{error}</div>

@@ -8,7 +8,7 @@ export function ArchivePage() {
 
   return (
     <section>
-      <h2>Archiwum zrealizowanych zgłoszeń</h2>
+      <h2>Archive of completed complaints</h2>
       <ComplaintsTable allComplaints={complaints} rows={archived} />
     </section>
   );

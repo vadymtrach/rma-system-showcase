@@ -33,7 +33,7 @@ export function UsersPage() {
       closeModal();
       await refreshUsers();
     } catch (e) {
-      setModalError(e instanceof Error ? e.message : "Wystąpił błąd.");
+      setModalError(e instanceof Error ? e.message : "An error occurred.");
     }
   }
 
@@ -43,32 +43,32 @@ export function UsersPage() {
       closeModal();
       await refreshUsers();
     } catch (e) {
-      setModalError(e instanceof Error ? e.message : "Wystąpił błąd.");
+      setModalError(e instanceof Error ? e.message : "An error occurred.");
     }
   }
 
   async function toggleStatus(user: User) {
-    const action = user.active ? "zablokować" : "aktywować";
-    if (!confirm(`Czy na pewno chcesz ${action} konto użytkownika ${user.fullName}?`)) return;
+    const action = user.active ? "deactivate" : "activate";
+    if (!confirm(`Are you sure you want to ${action} the account of ${user.fullName}?`)) return;
     try {
       await usersApi.updateUserStatus(user.id, !user.active);
       await refreshUsers();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Wystąpił błąd.");
+      alert(e instanceof Error ? e.message : "An error occurred.");
     }
   }
 
   return (
     <section>
-      <h2>Zarządzanie personelem</h2>
+      <h2>Staff management</h2>
       <div className="userbar">
-        <span>{users.length} kont w systemie</span>
+        <span>{users.length} accounts in the system</span>
         <div>
           <button className="btn" onClick={() => refreshUsers()}>
-            Odśwież
+            Refresh
           </button>
           <button className="btn btn-green" onClick={openCreate}>
-            + Nowy użytkownik
+            + New user
           </button>
         </div>
       </div>
@@ -77,10 +77,10 @@ export function UsersPage() {
           <thead>
             <tr>
               <th>Email</th>
-              <th>Imię i nazwisko</th>
-              <th>Rola</th>
-              <th>Status konta</th>
-              <th>Operacje</th>
+              <th>Full name</th>
+              <th>Role</th>
+              <th>Account status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -89,16 +89,16 @@ export function UsersPage() {
                 <td>{user.email}</td>
                 <td>{user.fullName}</td>
                 <td>{ROLE_LABELS[user.role] ?? user.role}</td>
-                <td>{user.active ? "Aktywne" : "Zablokowane"}</td>
+                <td>{user.active ? "Active" : "Deactivated"}</td>
                 <td className="actions-cell">
                   <button className="btn btn-small" onClick={() => openEdit(user)}>
-                    Edycja
+                    Edit
                   </button>
                   <button
                     className={`btn btn-small ${user.active ? "btn-red" : "btn-green"}`}
                     onClick={() => toggleStatus(user)}
                   >
-                    {user.active ? "Dezaktywuj" : "Aktywuj"}
+                    {user.active ? "Deactivate" : "Activate"}
                   </button>
                 </td>
               </tr>
@@ -155,11 +155,11 @@ function CreateUserForm({
 
   function submit() {
     if (!email.trim() || !password || !fullName.trim()) {
-      setLocalError("Wypełnij wszystkie pola.");
+      setLocalError("Fill in all fields.");
       return;
     }
     if (password.length < 6) {
-      setLocalError("Hasło musi zawierać co najmniej 6 znaków.");
+      setLocalError("Password must be at least 6 characters long.");
       return;
     }
     onSubmit({ email: email.trim(), password, fullName: fullName.trim(), role });
@@ -167,26 +167,26 @@ function CreateUserForm({
 
   return (
     <>
-      <h3>Dodaj nowego pracownika</h3>
-      <label>Email firmowy</label>
+      <h3>Add a new employee</h3>
+      <label>Company email</label>
       <input
         type="text"
-        placeholder="uzytkownik@rma-service.local"
+        placeholder="user@rma-service.local"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      <label>Hasło początkowe</label>
+      <label>Initial password</label>
       <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <label>Imię i nazwisko</label>
+      <label>Full name</label>
       <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-      <label>Rola systemowa</label>
+      <label>System role</label>
       <RoleSelect value={role} onChange={setRole} />
       <div className="form-actions">
         <button className="btn btn-green" onClick={submit}>
-          Zapisz
+          Save
         </button>
         <button className="btn" onClick={onCancel}>
-          Anuluj
+          Cancel
         </button>
       </div>
       <div className="error-msg">{localError || error}</div>
@@ -212,7 +212,7 @@ function EditUserForm({
 
   function submit() {
     if (!email.trim() || !fullName.trim()) {
-      setLocalError("Wypełnij wszystkie pola.");
+      setLocalError("Fill in all fields.");
       return;
     }
     onSubmit({ email: email.trim(), fullName: fullName.trim(), role });
@@ -220,19 +220,19 @@ function EditUserForm({
 
   return (
     <>
-      <h3>Modyfikacja konta</h3>
-      <label>Email firmowy</label>
+      <h3>Edit account</h3>
+      <label>Company email</label>
       <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <label>Imię i nazwisko</label>
+      <label>Full name</label>
       <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-      <label>Rola systemowa</label>
+      <label>System role</label>
       <RoleSelect value={role} onChange={setRole} />
       <div className="form-actions">
         <button className="btn btn-green" onClick={submit}>
-          Zapisz
+          Save
         </button>
         <button className="btn" onClick={onCancel}>
-          Anuluj
+          Cancel
         </button>
       </div>
       <div className="error-msg">{localError || error}</div>

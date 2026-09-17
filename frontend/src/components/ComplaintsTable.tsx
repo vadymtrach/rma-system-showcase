@@ -23,7 +23,7 @@ export function ComplaintsTable({ allComplaints, rows, renderActions }: Complain
             {columns.map((col) => (
               <th key={col.key}>{col.label}</th>
             ))}
-            {renderActions && <th>Akcje</th>}
+            {renderActions && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>

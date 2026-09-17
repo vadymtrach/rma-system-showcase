@@ -15,14 +15,14 @@ export function LoginPage() {
     e.preventDefault();
     setError("");
     if (!email.trim() || !password) {
-      setError("Podaj email i hasło.");
+      setError("Enter your email and password.");
       return;
     }
     try {
       await login(email.trim(), password);
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Błąd uwierzytelniania.");
+      setError(err instanceof Error ? err.message : "Authentication failed.");
     }
   };
 
@@ -37,7 +37,7 @@ export function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <label>Hasło</label>
+        <label>Password</label>
         <input
           type="password"
           placeholder="••••••••"
@@ -46,7 +46,7 @@ export function LoginPage() {
         />
         <div className="form-actions">
           <button type="submit" className="btn btn-green" style={{ width: "100%" }}>
-            Zaloguj się
+            Log in
           </button>
         </div>
         <div className="error-msg">{error}</div>

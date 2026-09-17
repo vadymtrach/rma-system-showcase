@@ -11,10 +11,10 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   });
 
   if (res.status === 401) {
-    throw new UnauthorizedError("Sesja wygasła lub brak uprawnień. Zaloguj się ponownie.");
+    throw new UnauthorizedError("Your session has expired or you don't have permission. Please log in again.");
   }
   if (!res.ok) {
-    let message = `Wystąpił błąd (${res.status})`;
+    let message = `An error occurred (${res.status})`;
     try {
       const body = await res.json();
       message = body.message || message;
@@ -40,7 +40,7 @@ export async function login(email: string, password: string): Promise<void> {
   });
 
   if (!res.ok) {
-    throw new ApiError("Nieprawidłowy login lub hasło.");
+    throw new ApiError("Invalid email or password.");
   }
 }
 

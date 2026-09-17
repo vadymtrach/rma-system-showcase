@@ -36,29 +36,29 @@ export function Topbar({
         </div>
         <nav className="navlinks">
           <NavLink to="/" end className={navClass}>
-            Zgłoszenia
+            Complaints
           </NavLink>
           {canManage && (
             <NavLink to="/create" className={navClass}>
-              Nowe zgłoszenie
+              New complaint
             </NavLink>
           )}
           {canManage && (
             <NavLink to="/users" className={navClass}>
-              Użytkownicy
+              Users
             </NavLink>
           )}
           <NavLink to="/archive" className={navClass}>
-            Archiwum
+            Archive
           </NavLink>
           <NavLink to="/tracking" className={navClass}>
-            Śledzenie przesyłki
+            Shipment tracking
           </NavLink>
           <NavLink to="/profile" className={navClass}>
-            Profil
+            Profile
           </NavLink>
-          <a onClick={handleLogout}>Wyloguj</a>
-          <a onClick={toggleDarkMode} title="Zmień motyw">
+          <a onClick={handleLogout}>Log out</a>
+          <a onClick={toggleDarkMode} title="Toggle theme">
             {isDark ? "☀️" : "🌙"}
           </a>
         </nav>
@@ -66,7 +66,7 @@ export function Topbar({
       <div className="searchbar">
         <input
           type="text"
-          placeholder="Szukaj zgłoszenia..."
+          placeholder="Search complaints..."
           value={searchTerm}
           onChange={(e) => onSearchTermChange(e.target.value)}
         />
@@ -74,7 +74,7 @@ export function Topbar({
           value={productTypeFilter}
           onChange={(e) => onProductTypeFilterChange(e.target.value as ProductType | "")}
         >
-          <option value="">Wszystkie typy</option>
+          <option value="">All types</option>
           {(Object.keys(PRODUCT_LABELS) as ProductType[]).map((key) => (
             <option key={key} value={key}>
               {PRODUCT_LABELS[key]}

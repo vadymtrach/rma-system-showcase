@@ -55,17 +55,17 @@ export function ComplaintsPage() {
       closeModal();
       await refreshComplaints();
     } catch (e) {
-      setModalError(e instanceof Error ? e.message : "Wystąpił błąd.");
+      setModalError(e instanceof Error ? e.message : "An error occurred.");
     }
   }
 
   async function handleDelete(complaint: Complaint) {
-    if (!confirm(`Czy na pewno trwale usunąć zgłoszenie ${complaint.rmaNumber}?`)) return;
+    if (!confirm(`Are you sure you want to permanently delete complaint ${complaint.rmaNumber}?`)) return;
     try {
       await complaintsApi.deleteComplaint(complaint.id);
       await refreshComplaints();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Wystąpił błąd.");
+      alert(e instanceof Error ? e.message : "An error occurred.");
     }
   }
 
@@ -74,36 +74,36 @@ export function ComplaintsPage() {
       <div>
         {canManage && complaint.status === "NEW" && (
           <button className="btn btn-small btn-blue" onClick={() => openModal("assign", complaint)}>
-            Przypisz
+            Assign
           </button>
         )}
         {canManage && complaint.status === "ASSIGNED" && (
           <button className="btn btn-small btn-blue" onClick={() => openModal("pickup", complaint)}>
-            Przyjmij
+            Accept
           </button>
         )}
         {canManage && complaint.status === "ACCEPTED" && (
           <button className="btn btn-small btn-blue" onClick={() => openModal("repair", complaint)}>
-            Naprawa
+            Repair
           </button>
         )}
         {canManage && complaint.status === "REPAIRED" && (
           <button className="btn btn-small btn-blue" onClick={() => openModal("return", complaint)}>
-            Zwróć do magazynu
+            Return to warehouse
           </button>
         )}
         {canWarehouse && complaint.status === "RETURNED" && (
           <button className="btn btn-small btn-green" onClick={() => openModal("shipment", complaint)}>
-            Wyślij do klienta
+            Ship to customer
           </button>
         )}
         {canManage && (
           <>
             <button className="btn btn-small" onClick={() => openModal("edit", complaint)}>
-              Edytuj
+              Edit
             </button>
             <button className="btn btn-small btn-red" onClick={() => handleDelete(complaint)}>
-              Usuń
+              Delete
             </button>
           </>
         )}
@@ -113,11 +113,11 @@ export function ComplaintsPage() {
 
   return (
     <section>
-      <h2>Zgłoszenia serwisowe w toku</h2>
+      <h2>Service complaints in progress</h2>
       <div className="userbar">
-        <span>{visibleRows.length} aktywnych spraw</span>
+        <span>{visibleRows.length} active cases</span>
         <button className="btn" onClick={() => refreshComplaints()}>
-          Odśwież
+          Refresh
         </button>
       </div>
       <ComplaintsTable allComplaints={complaints} rows={visibleRows} renderActions={canManage || canWarehouse ? renderActions : undefined} />
@@ -139,8 +139,8 @@ export function ComplaintsPage() {
       {modal === "pickup" && activeComplaint && (
         <Modal onClose={closeModal}>
           <DateForm
-            title={`Potwierdzenie przyjęcia na serwis ${activeComplaint.rmaNumber}`}
-            label="Data przyjęcia sprzętu"
+            title={`Confirm service pickup for ${activeComplaint.rmaNumber}`}
+            label="Equipment pickup date"
             error={modalError}
             onCancel={closeModal}
             onSubmit={(date) => runAction(() => complaintsApi.confirmPickup(activeComplaint.id, date))}
@@ -162,8 +162,8 @@ export function ComplaintsPage() {
       {modal === "return" && activeComplaint && (
         <Modal onClose={closeModal}>
           <DateForm
-            title={`Zwrot naprawionego sprzętu ${activeComplaint.rmaNumber}`}
-            label="Data przekazania na magazyn"
+            title={`Return repaired equipment ${activeComplaint.rmaNumber}`}
+            label="Warehouse handover date"
             error={modalError}
             onCancel={closeModal}
             onSubmit={(date) => runAction(() => complaintsApi.confirmReturn(activeComplaint.id, date))}
@@ -174,9 +174,9 @@ export function ComplaintsPage() {
       {modal === "shipment" && activeComplaint && (
         <Modal onClose={closeModal}>
           <DateForm
-            title={`Wysyłka zwrotna do klienta ${activeComplaint.rmaNumber}`}
-            label="Data nadania przesyłki"
-            submitLabel="Zatwierdź wysyłkę"
+            title={`Return shipment to customer ${activeComplaint.rmaNumber}`}
+            label="Shipment dispatch date"
+            submitLabel="Confirm shipment"
             error={modalError}
             onCancel={closeModal}
             onSubmit={(date) => runAction(() => complaintsApi.confirmShipment(activeComplaint.id, date))}
@@ -216,8 +216,8 @@ function AssignForm({
 
   return (
     <>
-      <h3>Przydziel zadanie {complaint.rmaNumber}</h3>
-      <label>Technik odpowiedzialny</label>
+      <h3>Assign task {complaint.rmaNumber}</h3>
+      <label>Responsible technician</label>
       <select value={userId} onChange={(e) => setUserId(e.target.value)}>
         {users
           .filter((u) => u.active)
@@ -227,14 +227,14 @@ function AssignForm({
             </option>
           ))}
       </select>
-      <label>Data delegacji</label>
+      <label>Assignment date</label>
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       <div className="form-actions">
         <button className="btn btn-green" onClick={() => onSubmit(Number(userId), date)}>
-          Zatwierdź
+          Confirm
         </button>
         <button className="btn" onClick={onCancel}>
-          Anuluj
+          Cancel
         </button>
       </div>
       <div className="error-msg">{error}</div>
@@ -245,7 +245,7 @@ function AssignForm({
 function DateForm({
   title,
   label,
-  submitLabel = "Zatwierdź",
+  submitLabel = "Confirm",
   error,
   onCancel,
   onSubmit,
@@ -268,7 +268,7 @@ function DateForm({
           {submitLabel}
         </button>
         <button className="btn" onClick={onCancel}>
-          Anuluj
+          Cancel
         </button>
       </div>
       <div className="error-msg">{error}</div>
@@ -293,7 +293,7 @@ function RepairForm({
 
   function submit() {
     if (!description.trim()) {
-      setLocalError("Wprowadź opis naprawy.");
+      setLocalError("Enter a repair description.");
       return;
     }
     onSubmit(description.trim(), date);
@@ -301,17 +301,17 @@ function RepairForm({
 
   return (
     <>
-      <h3>Raport techniczny naprawy {complaint.rmaNumber}</h3>
-      <label>Wykonane czynności serwisowe</label>
+      <h3>Technical repair report {complaint.rmaNumber}</h3>
+      <label>Service work performed</label>
       <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-      <label>Data wykonania</label>
+      <label>Completion date</label>
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       <div className="form-actions">
         <button className="btn btn-green" onClick={submit}>
-          Zapisz raport
+          Save report
         </button>
         <button className="btn" onClick={onCancel}>
-          Anuluj
+          Cancel
         </button>
       </div>
       <div className="error-msg">{localError || error}</div>
@@ -340,7 +340,7 @@ function EditForm({
   function submit() {
     const insuranceAmount = Number(insurance);
     if (!rmaNumber.trim() || !description.trim() || !address.trim() || Number.isNaN(insuranceAmount)) {
-      setLocalError("Wypełnij wszystkie wymagane pola.");
+      setLocalError("Fill in all required fields.");
       return;
     }
     onSubmit({
@@ -354,10 +354,10 @@ function EditForm({
 
   return (
     <>
-      <h3>Edycja danych zgłoszenia {complaint.rmaNumber}</h3>
-      <label>Numer referencyjny RMA</label>
+      <h3>Edit complaint {complaint.rmaNumber}</h3>
+      <label>RMA reference number</label>
       <input type="text" value={rmaNumber} onChange={(e) => setRmaNumber(e.target.value)} />
-      <label>Sprzęt</label>
+      <label>Equipment</label>
       <select value={productType} onChange={(e) => setProductType(e.target.value as ProductType)}>
         {(Object.keys(PRODUCT_LABELS) as ProductType[]).map((key) => (
           <option key={key} value={key}>
@@ -365,18 +365,18 @@ function EditForm({
           </option>
         ))}
       </select>
-      <label>Opis usterki</label>
+      <label>Fault description</label>
       <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-      <label>Adres wysyłki</label>
+      <label>Delivery address</label>
       <textarea value={address} onChange={(e) => setAddress(e.target.value)} />
-      <label>Kwota ubezpieczenia</label>
+      <label>Insurance amount</label>
       <input type="number" step="0.01" min="0" value={insurance} onChange={(e) => setInsurance(e.target.value)} />
       <div className="form-actions">
         <button className="btn btn-green" onClick={submit}>
-          Zapisz zmiany
+          Save changes
         </button>
         <button className="btn" onClick={onCancel}>
-          Anuluj
+          Cancel
         </button>
       </div>
       <div className="error-msg">{localError || error}</div>

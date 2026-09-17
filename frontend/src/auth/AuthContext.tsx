@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const user = await getMyProfile();
         startSession(user);
       } catch (e) {
-        setLoginError(e instanceof Error ? e.message : "Błąd uwierzytelniania.");
+        setLoginError(e instanceof Error ? e.message : "Authentication failed.");
         throw e;
       }
     },

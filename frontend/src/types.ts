@@ -23,25 +23,25 @@ export type ComplaintStatus =
   | "SHIPPED";
 
 export const PRODUCT_LABELS: Record<ProductType, string> = {
-  SERVER: "Serwer",
-  NETWORK_ROUTER: "Router sieciowy",
-  SWITCH: "Przełącznik (Switch)",
+  SERVER: "Server",
+  NETWORK_ROUTER: "Network router",
+  SWITCH: "Switch",
   LAPTOP: "Laptop",
-  WORKSTATION: "Stacja robocza",
+  WORKSTATION: "Workstation",
   MONITOR: "Monitor",
-  PRINTER: "Drukarka / Urządzenie wielofunkcyjne",
-  STORAGE_NAS: "Pamięć masowa (NAS)",
-  POWER_SUPPLY_UPS: "Zasilacz awaryjny (UPS)",
-  ACCESSORY_CABLE: "Okablowanie / Zasilacze",
-  ACCESSORY_PERIPHERAL: "Peryferia",
-  OTHER: "Inne",
+  PRINTER: "Printer / MFP",
+  STORAGE_NAS: "Storage (NAS)",
+  POWER_SUPPLY_UPS: "UPS",
+  ACCESSORY_CABLE: "Cabling / Power supplies",
+  ACCESSORY_PERIPHERAL: "Peripherals",
+  OTHER: "Other",
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
-  ADMIN: "Administrator Systemu",
-  SERVICE: "Inżynier Serwisu",
-  WAREHOUSE: "Dział Logistyki",
-  EMPLOYEE: "Pracownik",
+  ADMIN: "System Administrator",
+  SERVICE: "Service Engineer",
+  WAREHOUSE: "Logistics Department",
+  EMPLOYEE: "Employee",
 };
 
 // The backend returns one of four role-specific DTOs (AdminComplaintResponse,
@@ -87,13 +87,13 @@ export interface TableColumn {
 
 export const COLUMNS: TableColumn[] = [
   { key: "rmaNumber", label: "RMA ID" },
-  { key: "productType", label: "Urządzenie", render: (v) => PRODUCT_LABELS[v as ProductType] ?? String(v) },
-  { key: "description", label: "Opis awarii" },
-  { key: "assignedToFullName", label: "Przypisany technik" },
-  { key: "pickupConfirmed", label: "Data przyjęcia" },
+  { key: "productType", label: "Device", render: (v) => PRODUCT_LABELS[v as ProductType] ?? String(v) },
+  { key: "description", label: "Fault description" },
+  { key: "assignedToFullName", label: "Assigned technician" },
+  { key: "pickupConfirmed", label: "Pickup date" },
   {
     key: "repairConfirmed",
-    label: "Protokół naprawy",
+    label: "Repair report",
     render: (val, row) => {
       const desc = row.repairDescription;
       if (!val && !desc) return "-";
@@ -101,8 +101,8 @@ export const COLUMNS: TableColumn[] = [
       return String(desc || val || "-");
     },
   },
-  { key: "returnConfirmed", label: "Zakończenie serwisu" },
-  { key: "sentToClient", label: "Wysłano do klienta" },
-  { key: "deliveryAddress", label: "Adres dostawy" },
-  { key: "insuranceAmount", label: "Wartość (PLN)" },
+  { key: "returnConfirmed", label: "Service completed" },
+  { key: "sentToClient", label: "Sent to customer" },
+  { key: "deliveryAddress", label: "Delivery address" },
+  { key: "insuranceAmount", label: "Value (PLN)" },
 ];

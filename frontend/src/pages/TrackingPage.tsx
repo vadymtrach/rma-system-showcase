@@ -13,21 +13,21 @@ export function TrackingPage() {
 
   return (
     <section>
-      <h2>Monitoring listu przewozowego</h2>
+      <h2>Shipment tracking</h2>
       <div className="form-box" style={{ maxWidth: 440 }}>
-        <label>Numer przesyłki kurierskiej DPD</label>
+        <label>DPD courier tracking number</label>
         <input
           type="text"
-          placeholder="np. 01234567890123"
+          placeholder="e.g. 01234567890123"
           value={number}
           onChange={(e) => setNumber(e.target.value)}
         />
         <div className="form-actions">
           <button className="btn btn-green" onClick={openDpdTracking}>
-            Sprawdź status
+            Check status
           </button>
         </div>
-        <div className="info-msg">Przekierowanie do oficjalnego portalu kurierskiego w nowym oknie.</div>
+        <div className="info-msg">Opens the official courier tracking portal in a new window.</div>
       </div>
     </section>
   );
