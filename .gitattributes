@@ -1,7 +1,6 @@
-# Exclude frontend assets and demo certs from language statistics
-src/main/resources/static/** linguist-vendored
-src/main/resources/templates/** linguist-vendored
+backend/src/main/resources/templates/** linguist-vendored
 certs/** linguist-vendored
-/gradlew text eol=lf
+frontend/package-lock.json linguist-generated
+/backend/gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
