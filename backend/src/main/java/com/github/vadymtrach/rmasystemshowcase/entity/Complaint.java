@@ -26,35 +26,35 @@ public class Complaint {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String rmaNumber; // rma
+    private String rmaNumber;
 
     @Enumerated(value = EnumType.STRING)
-    private ProductType productType; // nazwa produktu
+    private ProductType productType;
 
-    private String description; // opis usterki
+    private String description;
 
     @Enumerated(value = EnumType.STRING)
     private ComplaintStatus status = ComplaintStatus.NEW;
 
     @ManyToOne
     @JoinColumn(name = "assigned_to_id")
-    private User assignedTo; // przekazano dla
+    private User assignedTo;
 
-    private LocalDate assignedDate; // data przekazania
+    private LocalDate assignedDate;
 
-    private LocalDate pickupConfirmed; // potwierdzenie odbioru
+    private LocalDate pickupConfirmed;
 
-    private String repairDescription; // co zostalo naprawione
+    private String repairDescription;
 
-    private LocalDate repairConfirmed; // oddane po naprawie (data)
+    private LocalDate repairConfirmed;
 
-    private LocalDate returnConfirmed; // potwierdzenie oddania
+    private LocalDate returnConfirmed;
 
-    private LocalDate sentToClient; // odeslanie do klienta
+    private LocalDate sentToClient;
 
-    private String deliveryAddress; // adres odsylki
+    private String deliveryAddress;
 
-    private BigDecimal insuranceAmount; // kwota ubezpieczenia
+    private BigDecimal insuranceAmount;
 
     @CreatedDate
     private LocalDateTime createdAt;
