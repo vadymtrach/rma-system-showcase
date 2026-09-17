@@ -21,9 +21,9 @@ Built with **Java 25**, **Spring Boot 4**, **PostgreSQL 16**, and **Docker Compo
 * **Backend:** Java 25, Spring Boot 4, Spring Security, Spring Data JPA
 * **Database:** PostgreSQL 16, Flyway
 * **Real-time:** WebSocket, STOMP, SockJS
-* **Frontend:** HTML, CSS, Vanilla JavaScript
+* **Frontend:** React, TypeScript, Vite
 * **Infrastructure:** Docker, Docker Compose, Nginx
-* **Build:** Gradle
+* **Build:** Gradle (backend), npm (frontend)
 
 ## RMA Workflow
 
@@ -115,13 +115,14 @@ docker compose down -v
 
 ## Docker Services
 
-| Service | Description                       |
-| ------- | --------------------------------- |
-| `app`   | Spring Boot application           |
-| `db`    | PostgreSQL 16                     |
-| `nginx` | Reverse proxy and SSL termination |
+| Service    | Description                                    |
+| ---------- | ----------------------------------------------- |
+| `app`      | Spring Boot application                         |
+| `frontend` | React app, built and served via nginx           |
+| `db`       | PostgreSQL 16                                   |
+| `nginx`    | Public reverse proxy and SSL termination        |
 
-The PostgreSQL container is named `rma-postgres`.
+The public `nginx` service routes `/api` and `/ws` to `app`, and everything else to `frontend`. The PostgreSQL container is named `rma-postgres`.
 
 Useful commands:
 
@@ -135,33 +136,42 @@ docker compose down
 
 ```text
 rma-system-showcase/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   └── resources/
-│   │       └── db/
-│   │           └── migration/
-│   └── test/
+├── backend/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   └── resources/
+│   │   │       └── db/
+│   │   │           └── migration/
+│   │   └── test/
+│   ├── build.gradle
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── Dockerfile
 ├── certs/
 ├── nginx.conf
 ├── docker-compose.yml
-├── Dockerfile
-├── build.gradle
 ├── .env.example
 └── README.md
 ```
 
 ## Local Development
 
-Run the application with Gradle:
+### Backend
+
+Run the application with Gradle from `backend/`:
 
 ```bash
+cd backend
 ./gradlew bootRun
 ```
 
 Windows:
 
 ```powershell
+cd backend
 .\gradlew.bat bootRun
 ```
 
@@ -171,10 +181,16 @@ Build the project:
 ./gradlew build
 ```
 
-Windows:
+When running outside Docker, a PostgreSQL instance and the required environment variables must be available.
 
-```powershell
-.\gradlew.bat build
+### Frontend
+
+Run the Vite dev server from `frontend/` (proxies `/api` and `/ws` to `http://localhost:8080`, so run the backend alongside it):
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-When running outside Docker, a PostgreSQL instance and the required environment variables must be available.
+Open `http://localhost:3000`.
