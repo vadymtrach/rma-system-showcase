@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useTheme } from "../theme/ThemeContext";
 import { PRODUCT_LABELS, type ProductType } from "../types";
+import { Logo } from "./Logo";
 
 interface TopbarProps {
   searchTerm: string;
@@ -32,6 +33,7 @@ export function Topbar({
     <header className="topbar">
       <div className="brand">
         <div className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+          <Logo size={26} />
           RMA WORKSPACE
         </div>
         <nav className="navlinks">

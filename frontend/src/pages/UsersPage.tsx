@@ -1,6 +1,7 @@
 import { useState } from "react";
 import * as usersApi from "../api/users";
 import { Modal } from "../components/Modal";
+import { PasswordInput } from "../components/PasswordInput";
 import { useData } from "../data/DataContext";
 import { ROLE_LABELS, type Role, type User } from "../types";
 
@@ -176,7 +177,7 @@ function CreateUserForm({
         onChange={(e) => setEmail(e.target.value)}
       />
       <label>Initial password</label>
-      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" />
       <label>Full name</label>
       <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
       <label>System role</label>

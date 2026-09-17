@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { changeMyPassword, getMyProfile } from "../api/users";
 import { useAuth } from "../auth/AuthContext";
+import { PasswordInput } from "../components/PasswordInput";
 import type { User } from "../types";
 
 export function ProfilePage() {
@@ -56,11 +57,11 @@ export function ProfilePage() {
         <hr />
         <h3 style={{ marginTop: 0 }}>Change password</h3>
         <label>Current password</label>
-        <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+        <PasswordInput value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
         <label>New password</label>
-        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+        <PasswordInput value={newPassword} onChange={setNewPassword} autoComplete="new-password" />
         <label>Repeat new password</label>
-        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+        <PasswordInput value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
         <div className="form-actions">
           <button className="btn btn-green" onClick={submitPasswordChange}>
             Save new password
