@@ -7,6 +7,8 @@ import com.github.vadymtrach.rmasystemshowcase.dto.response.UserResponse;
 import com.github.vadymtrach.rmasystemshowcase.entity.User;
 import com.github.vadymtrach.rmasystemshowcase.enums.Role;
 import com.github.vadymtrach.rmasystemshowcase.exception.BusinessLogicException;
+import com.github.vadymtrach.rmasystemshowcase.exception.ConflictException;
+import com.github.vadymtrach.rmasystemshowcase.exception.ResourceNotFoundException;
 import com.github.vadymtrach.rmasystemshowcase.mapper.UserMapper;
 import com.github.vadymtrach.rmasystemshowcase.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,9 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new ConflictException("User with email " + request.email() + " already exists");
+        }
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userMapper.toResponseDTO(userRepository.save(user));
@@ -45,6 +50,9 @@ public class UserService {
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User existing = findUserById(id);
+        if (userRepository.existsByEmailAndIdNot(request.email(), id)) {
+            throw new ConflictException("User with email " + request.email() + " already exists");
+        }
         if (request.role() != Role.ADMIN) {
             ensureNotLastActiveAdmin(existing);
         }
@@ -84,6 +92,6 @@ public class UserService {
 
     private User findUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
     }
 }

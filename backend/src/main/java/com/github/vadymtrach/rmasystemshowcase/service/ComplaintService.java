@@ -6,6 +6,7 @@ import com.github.vadymtrach.rmasystemshowcase.entity.Complaint;
 import com.github.vadymtrach.rmasystemshowcase.entity.User;
 import com.github.vadymtrach.rmasystemshowcase.enums.ComplaintStatus;
 import com.github.vadymtrach.rmasystemshowcase.enums.Role;
+import com.github.vadymtrach.rmasystemshowcase.exception.ConflictException;
 import com.github.vadymtrach.rmasystemshowcase.exception.ResourceNotFoundException;
 import com.github.vadymtrach.rmasystemshowcase.mapper.ComplaintMapper;
 import com.github.vadymtrach.rmasystemshowcase.repository.ComplaintRepository;
@@ -39,6 +40,9 @@ public class ComplaintService {
     @Transactional
     public ComplaintResponse create(ComplaintCreateRequest request,
                                     SecurityUser securityUser) {
+        if (complaintRepository.existsByRmaNumber(request.rmaNumber())) {
+            throw new ConflictException("Complaint with RMA number " + request.rmaNumber() + " already exists");
+        }
         Complaint complaint = complaintMapper.toEntity(request);
         Complaint saved = complaintRepository.save(complaint);
         ComplaintResponse response = complaintMapper.toResponse(saved, securityUser.role());
@@ -77,7 +81,7 @@ public class ComplaintService {
                                           SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
         User assignedUser = userRepository.findById(request.assignedToId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.assignedToId()));
+                .orElseThrow(() -> new ResourceNotFoundException("User", request.assignedToId()));
 
         existing.setAssignedTo(assignedUser);
         existing.setAssignedDate(request.assignedDate());
@@ -141,6 +145,10 @@ public class ComplaintService {
     public ComplaintResponse update(Long complaintId, ComplaintUpdateRequest request,
                                     SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
+        if (request.rmaNumber() != null
+                && complaintRepository.existsByRmaNumberAndIdNot(request.rmaNumber(), complaintId)) {
+            throw new ConflictException("Complaint with RMA number " + request.rmaNumber() + " already exists");
+        }
         complaintMapper.updateEntity(existing, request);
 
         ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
@@ -158,7 +166,7 @@ public class ComplaintService {
 
     private Complaint findById(Long complaintId) {
         return complaintRepository.findById(complaintId)
-                .orElseThrow(() -> new ResourceNotFoundException("Complaint not found with id: " + complaintId));
+                .orElseThrow(() -> new ResourceNotFoundException("Complaint", complaintId));
     }
 
 }

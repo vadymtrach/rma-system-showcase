@@ -1,7 +1,9 @@
 package com.github.vadymtrach.rmasystemshowcase.exception;
 
-public class BusinessLogicException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class BusinessLogicException extends ApiException {
     public BusinessLogicException(String message) {
-        super(message);
+        super(HttpStatus.BAD_REQUEST, message);
     }
 }

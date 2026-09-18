@@ -7,4 +7,8 @@ import java.util.List;
 
 public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
     List<Complaint> findAllByAssignedToId(Long assignedToId);
+
+    boolean existsByRmaNumber(String rmaNumber);
+
+    boolean existsByRmaNumberAndIdNot(String rmaNumber, Long id);
 }
