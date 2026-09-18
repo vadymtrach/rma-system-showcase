@@ -7,6 +7,8 @@ COPY gradlew ./
 RUN chmod +x gradlew
 
 COPY src ./src
+# Tests need Docker (Testcontainers), which isn't available during an image build;
+# they run in CI (.github/workflows/ci.yml) instead.
 RUN ./gradlew bootJar --no-daemon -x test
 
 

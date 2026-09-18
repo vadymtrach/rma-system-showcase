@@ -198,3 +198,21 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+### Tests
+
+Backend tests run against a real PostgreSQL started by [Testcontainers](https://testcontainers.com/), so Docker must be running (this also applies to `./gradlew build`):
+
+```bash
+cd backend
+./gradlew test
+```
+
+Frontend tests use Vitest and React Testing Library:
+
+```bash
+cd frontend
+npm test
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs both suites and the frontend build on every push to `main` and on pull requests.
