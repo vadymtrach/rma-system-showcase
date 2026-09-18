@@ -10,4 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     public Optional<User> findUserByEmail(String email);
 
     public boolean existsByRole(Role role);
+
+    public long countByRoleAndActiveTrue(Role role);
 }

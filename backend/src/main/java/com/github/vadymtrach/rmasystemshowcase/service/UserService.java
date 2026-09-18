@@ -5,6 +5,7 @@ import com.github.vadymtrach.rmasystemshowcase.dto.request.UserCreateRequest;
 import com.github.vadymtrach.rmasystemshowcase.dto.request.UserUpdateRequest;
 import com.github.vadymtrach.rmasystemshowcase.dto.response.UserResponse;
 import com.github.vadymtrach.rmasystemshowcase.entity.User;
+import com.github.vadymtrach.rmasystemshowcase.enums.Role;
 import com.github.vadymtrach.rmasystemshowcase.exception.BusinessLogicException;
 import com.github.vadymtrach.rmasystemshowcase.mapper.UserMapper;
 import com.github.vadymtrach.rmasystemshowcase.repository.UserRepository;
@@ -44,6 +45,9 @@ public class UserService {
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User existing = findUserById(id);
+        if (request.role() != Role.ADMIN) {
+            ensureNotLastActiveAdmin(existing);
+        }
         userMapper.updateEntityFromRequest(request, existing);
         return userMapper.toResponseDTO(existing);
     }
@@ -51,6 +55,9 @@ public class UserService {
     @Transactional
     public void updateStatus(Long id, boolean status) {
         User existing = findUserById(id);
+        if (!status) {
+            ensureNotLastActiveAdmin(existing);
+        }
         existing.setActive(status);
     }
 
@@ -66,6 +73,13 @@ public class UserService {
         }
 
         existing.setPassword(passwordEncoder.encode(request.newPassword()));
+    }
+
+    private void ensureNotLastActiveAdmin(User user) {
+        if (user.getRole() == Role.ADMIN && user.isActive()
+                && userRepository.countByRoleAndActiveTrue(Role.ADMIN) <= 1) {
+            throw new BusinessLogicException("Cannot deactivate or demote the last active admin");
+        }
     }
 
     private User findUserById(Long id) {
