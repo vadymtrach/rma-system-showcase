@@ -62,4 +62,8 @@ public class Complaint {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Setter(AccessLevel.NONE)
+    @Version
+    private Long version;
+
 }

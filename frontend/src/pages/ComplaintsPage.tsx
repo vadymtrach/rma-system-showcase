@@ -8,9 +8,14 @@ import { Modal } from "../components/Modal";
 import { useData } from "../data/DataContext";
 import { PRODUCT_LABELS, type Complaint, type ProductType } from "../types";
 
+// Local date, not UTC: toISOString() would give yesterday's date after midnight in UTC+ zones.
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+
+// Must match ASSIGNABLE_ROLES in the backend's ComplaintService.
+const ASSIGNABLE_ROLES = new Set(["EMPLOYEE", "SERVICE"]);
 
 type ModalKind = "assign" | "pickup" | "repair" | "return" | "shipment" | "edit" | null;
 
@@ -211,7 +216,8 @@ function AssignForm({
   onCancel: () => void;
   onSubmit: (assignedToId: number, assignedDate: string) => void;
 }) {
-  const [userId, setUserId] = useState<string>(users.find((u) => u.active)?.id.toString() ?? "");
+  const assignable = users.filter((u) => u.active && ASSIGNABLE_ROLES.has(u.role));
+  const [userId, setUserId] = useState<string>(assignable[0]?.id.toString() ?? "");
   const [date, setDate] = useState(todayIso());
 
   return (
@@ -219,18 +225,16 @@ function AssignForm({
       <h3>Assign task {complaint.rmaNumber}</h3>
       <label>Responsible technician</label>
       <select value={userId} onChange={(e) => setUserId(e.target.value)}>
-        {users
-          .filter((u) => u.active)
-          .map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.fullName} ({u.role})
-            </option>
-          ))}
+        {assignable.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.fullName} ({u.role})
+          </option>
+        ))}
       </select>
       <label>Assignment date</label>
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       <div className="form-actions">
-        <button className="btn btn-green" onClick={() => onSubmit(Number(userId), date)}>
+        <button className="btn btn-green" disabled={!userId} onClick={() => onSubmit(Number(userId), date)}>
           Confirm
         </button>
         <button className="btn" onClick={onCancel}>
@@ -328,7 +332,7 @@ function EditForm({
   complaint: Complaint;
   error: string;
   onCancel: () => void;
-  onSubmit: (input: complaintsApi.ComplaintCreateInput) => void;
+  onSubmit: (input: complaintsApi.ComplaintUpdateInput) => void;
 }) {
   const [rmaNumber, setRmaNumber] = useState(complaint.rmaNumber);
   const [productType, setProductType] = useState<ProductType>(complaint.productType);
@@ -349,6 +353,7 @@ function EditForm({
       description: description.trim(),
       deliveryAddress: address.trim(),
       insuranceAmount,
+      version: complaint.version,
     });
   }
 

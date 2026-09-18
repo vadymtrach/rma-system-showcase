@@ -69,6 +69,7 @@ export interface Complaint {
   insuranceAmount?: number | null;
   createdAt: string;
   updatedAt: string;
+  version: number;
 }
 
 export interface User {

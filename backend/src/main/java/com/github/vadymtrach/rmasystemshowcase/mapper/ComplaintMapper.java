@@ -51,7 +51,8 @@ public class ComplaintMapper {
                 complaint.getDeliveryAddress(),
                 complaint.getInsuranceAmount(),
                 complaint.getCreatedAt(),
-                complaint.getUpdatedAt()
+                complaint.getUpdatedAt(),
+                complaint.getVersion()
         );
     }
 
@@ -75,7 +76,8 @@ public class ComplaintMapper {
                 complaint.getDeliveryAddress(),
                 complaint.getInsuranceAmount(),
                 complaint.getCreatedAt(),
-                complaint.getUpdatedAt()
+                complaint.getUpdatedAt(),
+                complaint.getVersion()
         );
     }
 
@@ -96,7 +98,8 @@ public class ComplaintMapper {
                 complaint.getDeliveryAddress(),
                 complaint.getInsuranceAmount(),
                 complaint.getCreatedAt(),
-                complaint.getUpdatedAt()
+                complaint.getUpdatedAt(),
+                complaint.getVersion()
         );
     }
 
@@ -118,7 +121,8 @@ public class ComplaintMapper {
 
                 complaint.getDeliveryAddress(),
                 complaint.getCreatedAt(),
-                complaint.getUpdatedAt()
+                complaint.getUpdatedAt(),
+                complaint.getVersion()
         );
     }
 

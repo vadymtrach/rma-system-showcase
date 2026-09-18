@@ -18,8 +18,12 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -33,8 +37,39 @@ public class ComplaintService {
 
     private static final String WS_TOPIC = "/topic/rma-updates";
 
+    private static final Set<Role> ASSIGNABLE_ROLES = Set.of(Role.EMPLOYEE, Role.SERVICE);
+
+    /**
+     * Server and browser dates can differ by a day around midnight (the server runs in UTC),
+     * so a date one day ahead of the server's "today" is still accepted.
+     */
+    private static final int FUTURE_DATE_TOLERANCE_DAYS = 1;
+
+    /**
+     * Broadcasts only after the transaction commits; clients refetch on this message, and
+     * sending it earlier lets them read the data before the change is visible.
+     */
     private void notifyClients() {
-        messagingTemplate.convertAndSend(WS_TOPIC, "REFRESH");
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            messagingTemplate.convertAndSend(WS_TOPIC, "REFRESH");
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagingTemplate.convertAndSend(WS_TOPIC, "REFRESH");
+            }
+        });
+    }
+
+    /**
+     * Flushes so the response carries the incremented version and audit timestamps,
+     * then schedules the client notification.
+     */
+    private ComplaintResponse respond(Complaint complaint, SecurityUser securityUser) {
+        complaintRepository.flush();
+        notifyClients();
+        return complaintMapper.toResponse(complaint, securityUser.role());
     }
 
 
@@ -45,11 +80,7 @@ public class ComplaintService {
             throw new ConflictException("Complaint with RMA number " + request.rmaNumber() + " already exists");
         }
         Complaint complaint = complaintMapper.toEntity(request);
-        Complaint saved = complaintRepository.save(complaint);
-        ComplaintResponse response = complaintMapper.toResponse(saved, securityUser.role());
-
-        notifyClients();
-        return response;
+        return respond(complaintRepository.save(complaint), securityUser);
     }
 
     public ComplaintResponse getById(Long complaintId,
@@ -84,13 +115,17 @@ public class ComplaintService {
         transition(existing, ComplaintStatus.ASSIGNED);
         User assignedUser = userRepository.findById(request.assignedToId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", request.assignedToId()));
+        if (!assignedUser.isActive()) {
+            throw new BusinessLogicException("Cannot assign a complaint to an inactive user");
+        }
+        if (!ASSIGNABLE_ROLES.contains(assignedUser.getRole())) {
+            throw new BusinessLogicException("Complaints can only be assigned to employees or service engineers");
+        }
+        validateDate(request.assignedDate(), "Assignment date", null, null);
 
         existing.setAssignedTo(assignedUser);
         existing.setAssignedDate(request.assignedDate());
-
-        ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
-        notifyClients();
-        return response;
+        return respond(existing, securityUser);
     }
 
     @Transactional
@@ -98,11 +133,9 @@ public class ComplaintService {
                                            SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
         transition(existing, ComplaintStatus.ACCEPTED);
+        validateDate(request.pickupConfirmed(), "Pickup date", existing.getAssignedDate(), "assignment date");
         existing.setPickupConfirmed(request.pickupConfirmed());
-
-        ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
-        notifyClients();
-        return response;
+        return respond(existing, securityUser);
     }
 
     @Transactional
@@ -110,12 +143,10 @@ public class ComplaintService {
                                            SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
         transition(existing, ComplaintStatus.REPAIRED);
+        validateDate(request.repairDate(), "Repair date", existing.getPickupConfirmed(), "pickup date");
         existing.setRepairConfirmed(request.repairDate());
         existing.setRepairDescription(request.repairDescription());
-
-        ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
-        notifyClients();
-        return response;
+        return respond(existing, securityUser);
     }
 
     @Transactional
@@ -123,11 +154,9 @@ public class ComplaintService {
                                            SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
         transition(existing, ComplaintStatus.RETURNED);
+        validateDate(request.returnConfirmed(), "Return date", existing.getRepairConfirmed(), "repair date");
         existing.setReturnConfirmed(request.returnConfirmed());
-
-        ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
-        notifyClients();
-        return response;
+        return respond(existing, securityUser);
     }
 
     @Transactional
@@ -135,26 +164,24 @@ public class ComplaintService {
                                              SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
         transition(existing, ComplaintStatus.SHIPPED);
+        validateDate(request.sentToClient(), "Shipment date", existing.getReturnConfirmed(), "return date");
         existing.setSentToClient(request.sentToClient());
-
-        ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
-        notifyClients();
-        return response;
+        return respond(existing, securityUser);
     }
 
     @Transactional
     public ComplaintResponse update(Long complaintId, ComplaintUpdateRequest request,
                                     SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
+        if (!existing.getVersion().equals(request.version())) {
+            throw new ConflictException("This complaint was changed by someone else. Reload it and try again.");
+        }
         if (request.rmaNumber() != null
                 && complaintRepository.existsByRmaNumberAndIdNot(request.rmaNumber(), complaintId)) {
             throw new ConflictException("Complaint with RMA number " + request.rmaNumber() + " already exists");
         }
         complaintMapper.updateEntity(existing, request);
-
-        ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
-        notifyClients();
-        return response;
+        return respond(existing, securityUser);
     }
 
     @Transactional
@@ -172,6 +199,16 @@ public class ComplaintService {
                     "Cannot change complaint status from " + current + " to " + target);
         }
         complaint.setStatus(target);
+    }
+
+    private void validateDate(LocalDate date, String label, LocalDate notBefore, String notBeforeLabel) {
+        if (date.isAfter(LocalDate.now().plusDays(FUTURE_DATE_TOLERANCE_DAYS))) {
+            throw new BusinessLogicException(label + " cannot be in the future");
+        }
+        if (notBefore != null && date.isBefore(notBefore)) {
+            throw new BusinessLogicException(
+                    label + " cannot be before the " + notBeforeLabel + " (" + notBefore + ")");
+        }
     }
 
     private Complaint findById(Long complaintId) {

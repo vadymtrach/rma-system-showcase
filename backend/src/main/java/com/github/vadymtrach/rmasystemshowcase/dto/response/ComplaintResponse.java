@@ -19,4 +19,5 @@ public sealed interface ComplaintResponse
     String deliveryAddress();
     LocalDateTime createdAt();
     LocalDateTime updatedAt();
+    Long version();
 }

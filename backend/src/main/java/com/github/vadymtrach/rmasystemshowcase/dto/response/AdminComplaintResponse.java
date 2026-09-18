@@ -26,5 +26,6 @@ public record AdminComplaintResponse(Long id,
                                      String deliveryAddress,
                                      BigDecimal insuranceAmount,
                                      LocalDateTime createdAt,
-                                     LocalDateTime updatedAt) implements ComplaintResponse {
+                                     LocalDateTime updatedAt,
+                                     Long version) implements ComplaintResponse {
 }

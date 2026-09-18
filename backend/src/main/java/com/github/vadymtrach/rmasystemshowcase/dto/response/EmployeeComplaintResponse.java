@@ -24,6 +24,7 @@ public record EmployeeComplaintResponse(Long id,
 
                                         String deliveryAddress,
                                         LocalDateTime createdAt,
-                                        LocalDateTime updatedAt) implements ComplaintResponse {
+                                        LocalDateTime updatedAt,
+                                        Long version) implements ComplaintResponse {
 
 }

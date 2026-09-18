@@ -9,6 +9,11 @@ export interface ComplaintCreateInput {
   insuranceAmount: number;
 }
 
+export interface ComplaintUpdateInput extends ComplaintCreateInput {
+  // Version the edit was based on; the server rejects the update if the complaint changed since.
+  version: number;
+}
+
 export function getComplaints(): Promise<Complaint[]> {
   return apiFetch<Complaint[]>("/api/complaints");
 }
@@ -20,7 +25,7 @@ export function createComplaint(input: ComplaintCreateInput): Promise<Complaint>
   });
 }
 
-export function updateComplaint(id: number, input: ComplaintCreateInput): Promise<Complaint> {
+export function updateComplaint(id: number, input: ComplaintUpdateInput): Promise<Complaint> {
   return apiFetch<Complaint>(`/api/complaints/${id}`, {
     method: "PUT",
     body: JSON.stringify(input),
