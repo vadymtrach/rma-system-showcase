@@ -6,6 +6,7 @@ import com.github.vadymtrach.rmasystemshowcase.entity.Complaint;
 import com.github.vadymtrach.rmasystemshowcase.entity.User;
 import com.github.vadymtrach.rmasystemshowcase.enums.ComplaintStatus;
 import com.github.vadymtrach.rmasystemshowcase.enums.Role;
+import com.github.vadymtrach.rmasystemshowcase.exception.BusinessLogicException;
 import com.github.vadymtrach.rmasystemshowcase.exception.ConflictException;
 import com.github.vadymtrach.rmasystemshowcase.exception.ResourceNotFoundException;
 import com.github.vadymtrach.rmasystemshowcase.mapper.ComplaintMapper;
@@ -80,12 +81,12 @@ public class ComplaintService {
     public ComplaintResponse assignToUser(Long complaintId, ComplaintAssignmentRequest request,
                                           SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
+        transition(existing, ComplaintStatus.ASSIGNED);
         User assignedUser = userRepository.findById(request.assignedToId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", request.assignedToId()));
 
         existing.setAssignedTo(assignedUser);
         existing.setAssignedDate(request.assignedDate());
-        existing.setStatus(ComplaintStatus.ASSIGNED);
 
         ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
         notifyClients();
@@ -96,8 +97,8 @@ public class ComplaintService {
     public ComplaintResponse confirmPickup(Long complaintId, PickupConfirmationRequest request,
                                            SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
+        transition(existing, ComplaintStatus.ACCEPTED);
         existing.setPickupConfirmed(request.pickupConfirmed());
-        existing.setStatus(ComplaintStatus.ACCEPTED);
 
         ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
         notifyClients();
@@ -108,9 +109,9 @@ public class ComplaintService {
     public ComplaintResponse confirmRepair(Long complaintId, RepairUpdateRequest request,
                                            SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
+        transition(existing, ComplaintStatus.REPAIRED);
         existing.setRepairConfirmed(request.repairDate());
         existing.setRepairDescription(request.repairDescription());
-        existing.setStatus(ComplaintStatus.REPAIRED);
 
         ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
         notifyClients();
@@ -121,8 +122,8 @@ public class ComplaintService {
     public ComplaintResponse confirmReturn(Long complaintId, ReturnConfirmationRequest request,
                                            SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
+        transition(existing, ComplaintStatus.RETURNED);
         existing.setReturnConfirmed(request.returnConfirmed());
-        existing.setStatus(ComplaintStatus.RETURNED);
 
         ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
         notifyClients();
@@ -133,8 +134,8 @@ public class ComplaintService {
     public ComplaintResponse confirmShipment(Long complaintId, ShipmentConfirmationRequest request,
                                              SecurityUser securityUser) {
         Complaint existing = findById(complaintId);
+        transition(existing, ComplaintStatus.SHIPPED);
         existing.setSentToClient(request.sentToClient());
-        existing.setStatus(ComplaintStatus.SHIPPED);
 
         ComplaintResponse response = complaintMapper.toResponse(existing, securityUser.role());
         notifyClients();
@@ -162,6 +163,15 @@ public class ComplaintService {
         complaintRepository.delete(existing);
 
         notifyClients();
+    }
+
+    private void transition(Complaint complaint, ComplaintStatus target) {
+        ComplaintStatus current = complaint.getStatus();
+        if (!current.canTransitionTo(target)) {
+            throw new BusinessLogicException(
+                    "Cannot change complaint status from " + current + " to " + target);
+        }
+        complaint.setStatus(target);
     }
 
     private Complaint findById(Long complaintId) {

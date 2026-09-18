@@ -6,5 +6,16 @@ public enum ComplaintStatus {
     ACCEPTED,
     REPAIRED,
     RETURNED,
-    SHIPPED
+    SHIPPED;
+
+    public boolean canTransitionTo(ComplaintStatus target) {
+        return switch (this) {
+            case NEW -> target == ASSIGNED;
+            case ASSIGNED -> target == ACCEPTED;
+            case ACCEPTED -> target == REPAIRED;
+            case REPAIRED -> target == RETURNED;
+            case RETURNED -> target == SHIPPED;
+            case SHIPPED -> false;
+        };
+    }
 }
