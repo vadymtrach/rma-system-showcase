@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Locale;
+
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
@@ -29,4 +31,15 @@ public class User {
     private Role role;
 
     private boolean active = true;
+
+    /**
+     * Emails are stored lowercase so lookups and the unique constraint are case-insensitive.
+     */
+    public void setEmail(String email) {
+        this.email = normalizeEmail(email);
+    }
+
+    public static String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+    }
 }

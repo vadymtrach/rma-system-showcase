@@ -26,6 +26,10 @@ export function ProfilePage() {
       setError("All fields are required.");
       return;
     }
+    if (newPassword.length < 8) {
+      setError("New password must be at least 8 characters long.");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
       return;

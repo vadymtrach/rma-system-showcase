@@ -159,8 +159,8 @@ function CreateUserForm({
       setLocalError("Fill in all fields.");
       return;
     }
-    if (password.length < 6) {
-      setLocalError("Password must be at least 6 characters long.");
+    if (password.length < 8) {
+      setLocalError("Password must be at least 8 characters long.");
       return;
     }
     onSubmit({ email: email.trim(), password, fullName: fullName.trim(), role });

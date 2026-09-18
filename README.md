@@ -80,9 +80,13 @@ docker compose down -v
 
 ## Demo Credentials
 
+On first start, an admin account is created from `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` in `.env`. With the values from `.env.example`, that is:
+
 | Role               | Email                        | Password      |
 | ------------------ | ---------------------------- | ------------- |
 | Administrator      | `admin123@gmail.com`         | `admin123`    |
+
+Change these values before deploying anywhere public. The admin is only created while no active admin exists, so editing `.env` afterwards does not change an existing admin's password.
 
 ## API
 

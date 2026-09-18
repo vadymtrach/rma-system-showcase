@@ -12,6 +12,10 @@ server:
 app:
   # Comma-separated origins allowed for CORS and the /ws WebSocket endpoint.
   allowed-origins: ${ALLOWED_ORIGINS:https://localhost,http://localhost,http://localhost:3000,http://localhost:8080}
+  # Initial admin, created at startup only while no active admin exists.
+  bootstrap-admin:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
 
 spring:
   application:

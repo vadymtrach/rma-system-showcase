@@ -31,7 +31,7 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
+        if (userRepository.existsByEmail(User.normalizeEmail(request.email()))) {
             throw new ConflictException("User with email " + request.email() + " already exists");
         }
         User user = userMapper.toEntity(request);
@@ -52,14 +52,14 @@ public class UserService {
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User existing = findUserById(id);
-        if (userRepository.existsByEmailAndIdNot(request.email(), id)) {
+        if (userRepository.existsByEmailAndIdNot(User.normalizeEmail(request.email()), id)) {
             throw new ConflictException("User with email " + request.email() + " already exists");
         }
         if (request.role() != Role.ADMIN) {
             ensureNotLastActiveAdmin(existing);
         }
         boolean identityChanged = existing.getRole() != request.role()
-                || !existing.getEmail().equals(request.email());
+                || !existing.getEmail().equals(User.normalizeEmail(request.email()));
         userMapper.updateEntityFromRequest(request, existing);
         if (identityChanged) {
             userSessionService.expireAllSessions(id);
