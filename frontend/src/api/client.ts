@@ -39,6 +39,15 @@ export async function login(email: string, password: string): Promise<void> {
     credentials: "same-origin",
   });
 
+  if (res.status === 429) {
+    const retryAfter = Number(res.headers.get("Retry-After"));
+    const minutes = Number.isFinite(retryAfter) && retryAfter > 0 ? Math.ceil(retryAfter / 60) : null;
+    throw new ApiError(
+      minutes
+        ? `Too many failed login attempts. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`
+        : "Too many failed login attempts. Try again later.",
+    );
+  }
   if (!res.ok) {
     throw new ApiError("Invalid email or password.");
   }
