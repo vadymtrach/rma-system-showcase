@@ -7,6 +7,7 @@ import com.github.vadymtrach.rmasystemshowcase.dto.request.UserUpdateRequest;
 import com.github.vadymtrach.rmasystemshowcase.dto.response.UserResponse;
 import com.github.vadymtrach.rmasystemshowcase.security.SecurityUser;
 import com.github.vadymtrach.rmasystemshowcase.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -46,8 +47,9 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/me/password")
     public ResponseEntity<Void> changeMyPassword(@Valid @RequestBody UserChangePasswordRequest request,
-                                                 @AuthenticationPrincipal SecurityUser securityUser){
-        userService.changePassword(securityUser.id(), request);
+                                                 @AuthenticationPrincipal SecurityUser securityUser,
+                                                 HttpSession session){
+        userService.changePassword(securityUser.id(), request, session.getId());
         return ResponseEntity.noContent().build();
     }
 

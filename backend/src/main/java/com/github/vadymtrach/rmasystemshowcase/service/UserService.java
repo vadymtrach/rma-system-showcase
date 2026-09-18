@@ -11,6 +11,7 @@ import com.github.vadymtrach.rmasystemshowcase.exception.ConflictException;
 import com.github.vadymtrach.rmasystemshowcase.exception.ResourceNotFoundException;
 import com.github.vadymtrach.rmasystemshowcase.mapper.UserMapper;
 import com.github.vadymtrach.rmasystemshowcase.repository.UserRepository;
+import com.github.vadymtrach.rmasystemshowcase.security.UserSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final UserSessionService userSessionService;
 
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
@@ -56,7 +58,12 @@ public class UserService {
         if (request.role() != Role.ADMIN) {
             ensureNotLastActiveAdmin(existing);
         }
+        boolean identityChanged = existing.getRole() != request.role()
+                || !existing.getEmail().equals(request.email());
         userMapper.updateEntityFromRequest(request, existing);
+        if (identityChanged) {
+            userSessionService.expireAllSessions(id);
+        }
         return userMapper.toResponseDTO(existing);
     }
 
@@ -67,10 +74,13 @@ public class UserService {
             ensureNotLastActiveAdmin(existing);
         }
         existing.setActive(status);
+        if (!status) {
+            userSessionService.expireAllSessions(id);
+        }
     }
 
     @Transactional
-    public void changePassword(Long id, UserChangePasswordRequest request) {
+    public void changePassword(Long id, UserChangePasswordRequest request, String currentSessionId) {
         User existing = findUserById(id);
 
         if (!passwordEncoder.matches(request.currentPassword(), existing.getPassword())) {
@@ -81,6 +91,7 @@ public class UserService {
         }
 
         existing.setPassword(passwordEncoder.encode(request.newPassword()));
+        userSessionService.expireOtherSessions(id, currentSessionId);
     }
 
     private void ensureNotLastActiveAdmin(User user) {

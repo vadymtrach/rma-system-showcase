@@ -19,12 +19,18 @@ public class WebSocketSecurityConfig {
         messages
                 .nullDestMatcher().permitAll()
                 .simpTypeMatchers(CONNECT, CONNECT_ACK, DISCONNECT, UNSUBSCRIBE, HEARTBEAT).permitAll()
-                .simpDestMatchers("/topic/**").authenticated()
+                // Clients may only subscribe to topics; publishing to them is server-side only.
+                // Otherwise any user could broadcast to every connected browser.
                 .simpSubscribeDestMatchers("/topic/**").authenticated()
                 .anyMessage().denyAll();
 
         return messages.build();
     }
+    /**
+     * Disables STOMP CSRF token checks. Safe only because the session cookie is SameSite=Strict
+     * (so cross-site pages can't open an authenticated socket) and the /ws endpoint enforces
+     * allowed origins. See SecurityConfig and SessionCookieSettingsTest.
+     */
     @Bean("csrfChannelInterceptor")
     public ChannelInterceptor csrfChannelInterceptor() {
         return new ChannelInterceptor() {};

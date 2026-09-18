@@ -24,6 +24,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_PORT: 8080
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://localhost}
     depends_on:
       db:
         condition: service_healthy

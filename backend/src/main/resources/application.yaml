@@ -9,6 +9,10 @@ server:
         secure: ${COOKIE_SECURE:true}
         same-site: strict
 
+app:
+  # Comma-separated origins allowed for CORS and the /ws WebSocket endpoint.
+  allowed-origins: ${ALLOWED_ORIGINS:https://localhost,http://localhost,http://localhost:3000,http://localhost:8080}
+
 spring:
   application:
     name: rma-system
