@@ -5,7 +5,7 @@ import { Logo } from "../components/Logo";
 import { PasswordInput } from "../components/PasswordInput";
 
 export function LoginPage() {
-  const { currentUser, loading, login } = useAuth();
+  const { currentUser, loading, login, loginError } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +49,7 @@ export function LoginPage() {
             Log in
           </button>
         </div>
-        <div className="error-msg">{error}</div>
+        <div className="error-msg">{error || loginError}</div>
       </form>
     </div>
   );

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import * as authApi from "../api/client";
 import { getMyProfile } from "../api/users";
 import { connectWebSocket, disconnectWebSocket } from "../ws";
@@ -32,10 +32,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const startSession = useCallback(
     (user: User) => {
       setCurrentUser(user);
-      connectWebSocket(() => listeners.forEach((l) => l()));
+      connectWebSocket(
+        () => listeners.forEach((l) => l()),
+        // A 401 here triggers the unauthorized handler below, which stops reconnecting.
+        () => getMyProfile().then(() => undefined, () => undefined),
+      );
     },
     [listeners],
   );
+
+  // Any 401 means the server-side session is gone (expired, or ended after an account change).
+  // Clearing the user makes ProtectedRoute redirect to the login page.
+  const currentUserRef = useRef<User | null>(null);
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
+
+  useEffect(() => {
+    authApi.setUnauthorizedHandler(() => {
+      if (currentUserRef.current) setLoginError("Your session has expired. Please log in again.");
+      disconnectWebSocket();
+      setCurrentUser(null);
+    });
+    return () => authApi.setUnauthorizedHandler(null);
+  }, []);
 
   useEffect(() => {
     getMyProfile()

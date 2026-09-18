@@ -1,6 +1,13 @@
 export class ApiError extends Error {}
 export class UnauthorizedError extends ApiError {}
 
+let unauthorizedHandler: (() => void) | null = null;
+
+// Called whenever an API request gets a 401, so the app can drop the stale session.
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler;
+}
+
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
 
@@ -11,6 +18,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   });
 
   if (res.status === 401) {
+    unauthorizedHandler?.();
     throw new UnauthorizedError("Your session has expired or you don't have permission. Please log in again.");
   }
   if (!res.ok) {
