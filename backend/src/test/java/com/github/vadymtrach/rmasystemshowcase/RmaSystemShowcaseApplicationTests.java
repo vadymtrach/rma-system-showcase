@@ -1,10 +1,9 @@
 package com.github.vadymtrach.rmasystemshowcase;
 
+import com.github.vadymtrach.rmasystemshowcase.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class RmaSystemShowcaseApplicationTests {
+class RmaSystemShowcaseApplicationTests extends IntegrationTest {
 
     @Test
     void contextLoads() {
