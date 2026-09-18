@@ -32,3 +32,18 @@ out/
 
 .vscode/
 .env
+.env.*
+!.env.example
+
+### Frontend / Node ###
+node_modules/
+dist/
+*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+npm-debug.log*
+
+### Logs & OS ###
+*.log
+.DS_Store
+Thumbs.db
