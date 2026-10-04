@@ -147,6 +147,18 @@ class ComplaintWorkflowTest extends IntegrationTest {
         assertThat(statusSeenAtNotification).containsExactly("ASSIGNED");
     }
 
+    @Test
+    void pickupCannotBeConfirmedTwice() throws Exception {
+        long id = createComplaint("RMA-666");
+        advanceTo(id, ComplaintStatus.ACCEPTED, employee);
+        patchJson(admin, "/api/complaints/" + id + "/pickup", Map.of("pickupConfirmed", TODAY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("from ACCEPTED to ACCEPTED")));
+
+    }
+
+
+
     private ResultActions assign(long complaintId, long userId, LocalDate date) throws Exception {
         return patchJson(admin, "/api/complaints/" + complaintId + "/assign",
                 Map.of("assignedToId", userId, "assignedDate", date.toString()));
@@ -168,4 +180,6 @@ class ComplaintWorkflowTest extends IntegrationTest {
             throw new IllegalStateException(e);
         }
     }
+
+
 }
